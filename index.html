@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Lada tradycyjna — Biedronka (demo)</title>
+  <meta name="description" content="Kafelki produktów z lady tradycyjnej. Kliknij, aby zobaczyć skład i wartości odżywcze." />
+  <style>
+    :root {
+      --bg: #0b0c10;
+      --panel: #121318;
+      --muted: #e8f3ff;
+      --text: #e8eaed;
+      --accent: #ffd100;
+      --accent-2: #e4002b;
+      --card: #171821;
+      --ring: #2a2d36;
+    }
+    * { box-sizing: border-box }
+    html,body { height: 100% }
+    body {
+      margin: 0; font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji";
+      /* PRZYGASZONE TŁO Z PLIKU tlo.jpg */
+      background: linear-gradient(rgba(0,0,0,.68), rgba(0,0,0,.68)), url('tlo.jpg') center / cover no-repeat fixed;
+      color: var(--text);
+    }
+
+    /* --- Czerwony pasek za nagłówkiem: wąski, bez gradientu, zaokrąglony --- */
+    .header-bg{
+      position:absolute;
+      top:0;
+      left:50%;
+      transform:translateX(-50%);
+      width:100%;
+      max-width:1200px;          /* trochę szerszy niż .wrap, żeby ładnie „wystawał” */
+      height:75px;              /* wysokość paska – dostosuj wg uznania */
+      background-color: rgba(213, 13, 13, 0.85); /* czerwony z lekkim przygaszeniem */
+      border-bottom-left-radius:25px;
+      border-bottom-right-radius:25px;
+      box-shadow:0 6px 20px rgba(0,0,0,.4);  /* delikatne odcięcie od tła */
+      z-index:0;
+    }
+
+    .wrap { max-width: 1100px; margin: 0 auto; padding: 24px; position:relative; z-index:1; }
+    header { display:flex; align-items:center; gap:16px; margin-bottom: 16px }
+    .brand { display:flex; align-items:center; gap: 12px }
+    /* LOGO Z PLIKU logo.jpg (zamiast SVG) */
+    .logo { width: 40px; height: 40px; border-radius: 10px; overflow: hidden; box-shadow: 0 6px 20px rgba(0,0,0,.35) }
+    .logo img { width: 100%; height: 100%; object-fit: cover; display:block }
+    .title { font-weight: 800; font-size: 22px; letter-spacing: .2px }
+    .subtitle { color: var(--muted); font-size: 12px }
+
+    .toolbar { display:flex; gap: 12px; align-items: center; margin-left:auto }
+    .input {
+      display:flex; align-items:center; gap:8px; background: var(--panel); border: 1px solid var(--ring); border-radius: 12px; padding: 10px 12px; min-width: 280px
+    }
+    .input input { flex:1; background: transparent; border:0; color: var(--text); outline: none; font-size: 14px }
+    .btn { cursor: pointer; border: 1px solid var(--ring); background: var(--card); color: var(--text); border-radius: 12px; padding: 10px 14px; font-weight: 600; transition: .2s transform, .2s filter }
+    .btn:hover { transform: translateY(-1px) }
+    .btn.primary { background: linear-gradient(180deg, var(--accent), #ffc400); color:#111; border-color: #f1c900 }
+
+    .grid { display:grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 14px; margin-top: 12px }
+    .card { position:relative; background: linear-gradient(180deg, rgba(255,255,255,.02), rgba(255,255,255,.0)), var(--card); border:1px solid var(--ring); border-radius: 16px; overflow: hidden; cursor: pointer; transition: .2s transform }
+    .card:hover { transform: translateY(-2px) }
+    .card-img { height: 150px; background: #0e0f15; display:grid; place-items:center; overflow:hidden }
+    .card-img img { width: 100%; height: 100%; object-fit: cover }
+    .card-body { padding: 12px 12px 14px }
+    .card h3 { margin: 0 0 6px; font-size: 16px }
+    .badge { display:inline-flex; align-items:center; gap:6px; font-size: 12px; background: #0e1017; color: var(--muted); border:1px solid var(--ring); padding: 6px 8px; border-radius: 999px }
+
+    .modal {
+      position: fixed; inset: 0; display:none; place-items: center; background: rgba(0,0,0,.5); backdrop-filter: blur(2px); padding: 18px; z-index: 50
+    }
+    .modal.open { display:grid }
+    .sheet { width: min(860px, 96vw); background: var(--panel); border: 1px solid var(--ring); border-radius: 18px; overflow: hidden; box-shadow: 0 20px 70px rgba(0,0,0,.5) }
+    .sheet-head { display:flex; align-items:center; gap:12px; padding: 14px 16px; background: linear-gradient(180deg, rgba(255,255,255,.02), rgba(255,255,255,0)); border-bottom:1px solid var(--ring) }
+    .pill { background: #0e1017; border:1px solid var(--ring); padding: 6px 10px; border-radius: 999px; color: var(--muted); font-size: 12px }
+    .close { margin-left:auto; cursor:pointer; background: transparent; border:0; color: var(--muted); font-weight: 700; font-size: 22px }
+    .sheet-body { display:grid; grid-template-columns: 320px 1fr; gap: 18px; padding: 16px }
+    .sheet-body img { width: 100%; border-radius: 12px; border:1px solid var(--ring) }
+    .facts { display:grid; gap: 10px }
+    .facts h4 { margin: 0 0 4px 0 }
+    .facts ul { margin: 0; padding-left: 18px }
+    .nutri { display:grid; grid-template-columns: repeat(2, 1fr); gap: 8px }
+    .nutri .row { display:flex; justify-content: space-between; background: #0e1017; border:1px solid var(--ring); padding:8px 10px; border-radius: 8px; font-size: 14px }
+
+    .hint { margin-top: 8px; color: var(--muted); font-size: 12px }
+
+    @media (max-width: 750px) {
+      .sheet-body { grid-template-columns: 1fr }
+    }
+  </style>
+</head>
+<body>
+  <!-- Czerwony pasek tła za nagłówkiem -->
+  <div class="header-bg"></div>
+
+  <div class="wrap">
+    <header>
+      <div class="brand">
+        <div class="logo" title="Logo">
+          <img src="logo.png" alt="Logo" />
+        </div>
+        <div>
+          <div class="title">Kupuj świadomie na Ladzie Tradycyjnej!</div>
+          <div class="subtitle">Kliknij kafelek lub wyszukaj, aby poznać skład i wartości odżywcze naszych produktów</div>
+        </div>
+      </div>
+      <div class="toolbar">
+        <label class="input" title="Szukaj po nazwie">
+          <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M10 2a8 8 0 105.293 14.293l3.707 3.707 1.414-1.414-3.707-3.707A8 8 0 0010 2zm0 2a6 6 0 110 12A6 6 0 0110 4z"/></svg>
+          <input id="search" placeholder="Szukaj produktu… (np. szynka)" autocomplete="off" />
+        </label>
+        <button id="resetBtn" class="btn">Wyczyść filtr</button>
+      </div>
+    </header>
+
+    <main>
+      <div id="grid" class="grid" aria-live="polite"></div>
+    </main>
+  </div>
+
+  <!-- Modal szczegółów produktu -->
+  <div id="modal" class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+    <div class="sheet">
+      <div class="sheet-head">
+        <span id="modalCategory" class="pill">Produkt</span>
+        <strong id="modalTitle">Nazwa produktu</strong>
+        <button class="close" id="closeModal" aria-label="Zamknij">×</button>
+      </div>
+      <div class="sheet-body">
+        <img id="modalImg" alt="Zdjęcie produktu" />
+        <div class="facts">
+          <section>
+            <h4>Skład</h4>
+            <ul id="ingredients"></ul>
+          </section>
+          <section>
+            <h4>Wartości odżywcze (100 g)</h4>
+            <div id="nutri" class="nutri"></div>
+          </section>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ====== Dane produktów (demo) ====== -->
+  <script>
+    const products = [
+      {
+        id: 'kielbasa-krakowska',
+        name: 'Kiełbasa krakowska sucha',
+        category: 'Wędliny',
+        image: 'szynka1.jpg',
+        ingredients: [
+          'Mięso wieprzowe 95%', 'Sól', 'Pieprz', 'Czosnek', 'Substancja konserwująca: azotyn sodu'
+        ],
+        nutrition: {
+          'Energia': '1640 kJ / 395 kcal',
+          'Tłuszcz': '32 g',
+          'w tym kwasy nasycone': '12 g',
+          'Węglowodany': '1 g',
+          'w tym cukry': '0 g',
+          'Białko': '25 g',
+          'Sól': '3.2 g'
+        }
+      },
+      {
+        id: 'szynka-gotowana',
+        name: 'Szynka gotowana klasyczna',
+        category: 'Wędliny',
+        image: 'szynka2.jpg',
+        ingredients: [
+          'Szynka wieprzowa 88%', 'Woda', 'Sól', 'Stabilizatory: E450, E451', 'Błonnik roślinny', 'Przyprawy'
+        ],
+        nutrition: {
+          'Energia': '450 kJ / 108 kcal',
+          'Tłuszcz': '3 g',
+          'w tym kwasy nasycone': '1.2 g',
+          'Węglowodany': '1 g',
+          'w tym cukry': '1 g',
+          'Białko': '19 g',
+          'Sól': '2.1 g'
+        }
+      },
+      {
+        id: 'ser-zolty',
+        name: 'Ser żółty gouda',
+        category: 'Nabiał',
+        image: 'ser.jpg',
+        ingredients: [
+          'Mleko krowie', 'Sól', 'Kultury bakterii', 'Podpuszczka mikrobiologiczna'
+        ],
+        nutrition: {
+          'Energia': '1560 kJ / 375 kcal',
+          'Tłuszcz': '30 g',
+          'w tym kwasy nasycone': '20 g',
+          'Węglowodany': '1 g',
+          'w tym cukry': '1 g',
+          'Białko': '25 g',
+          'Sól': '1.8 g'
+        }
+      },
+      {
+        id: 'salatka-jarzynowa',
+        name: 'Sałatka jarzynowa',
+        category: 'Sałatki / Deli',
+        image: 'salatka.jpg',
+        ingredients: [
+          'Warzywa (ziemniaki, marchew, groszek, seler)', 'Majonez', 'Musztarda', 'Sól', 'Cukier', 'Przyprawy'
+        ],
+        nutrition: {
+          'Energia': '820 kJ / 196 kcal',
+          'Tłuszcz': '15 g',
+          'w tym kwasy nasycone': '2 g',
+          'Węglowodany': '12 g',
+          'w tym cukry': '3 g',
+          'Białko': '3 g',
+          'Sól': '1.2 g'
+        }
+      },
+      {
+        id: 'sledz-w-smietanie',
+        name: 'Śledź w śmietanie',
+        category: 'Ryby / Deli',
+        image: 'sledz.png',
+        ingredients: [
+          'Śledź', 'Śmietana', 'Cebula', 'Sól', 'Cukier', 'Pieprz'
+        ],
+        nutrition: {
+          'Energia': '930 kJ / 223 kcal',
+          'Tłuszcz': '18 g',
+          'w tym kwasy nasycone': '7 g',
+          'Węglowodany': '4 g',
+          'w tym cukry': '3 g',
+          'Białko': '12 g',
+          'Sól': '1.6 g'
+        }
+      }
+    ];
+  </script>
+
+  <!-- ====== App ====== -->
+  <script>
+    const grid = document.getElementById('grid');
+    const modal = document.getElementById('modal');
+    const closeModal = document.getElementById('closeModal');
+    const modalTitle = document.getElementById('modalTitle');
+    const modalCategory = document.getElementById('modalCategory');
+    const modalImg = document.getElementById('modalImg');
+    const ingredientsEl = document.getElementById('ingredients');
+    const nutriEl = document.getElementById('nutri');
+
+    const searchInput = document.getElementById('search');
+    const resetBtn = document.getElementById('resetBtn');
+
+    function render(productsToShow) {
+      grid.innerHTML = '';
+      productsToShow.forEach(p => {
+        const card = document.createElement('article');
+        card.className = 'card';
+        card.innerHTML = `
+          <div class="card-img">${p.image ? `<img alt="${p.name}" src="${p.image}">` : ''}</div>
+          <div class="card-body">
+            <h3>${p.name}</h3>
+            <span class="badge">${p.category}</span>
+          </div>
+        `;
+        card.addEventListener('click', () => openProduct(p));
+        grid.appendChild(card);
+      });
+    }
+
+    function openProduct(p) {
+      modalTitle.textContent = p.name;
+      modalCategory.textContent = p.category || 'Produkt';
+      modalImg.src = p.image || '';
+
+      // skład
+      ingredientsEl.innerHTML = '';
+      (p.ingredients || []).forEach(i => {
+        const li = document.createElement('li');
+        li.textContent = i; ingredientsEl.appendChild(li);
+      });
+
+      // wartości
+      nutriEl.innerHTML = '';
+      const n = p.nutrition || {};
+      Object.keys(n).forEach(k => {
+        const row = document.createElement('div');
+        row.className = 'row';
+        row.innerHTML = `<span>${k}</span><strong>${n[k]}</strong>`;
+        nutriEl.appendChild(row);
+      });
+
+      modal.classList.add('open');
+    }
+
+    function closeAllModals(){ modal.classList.remove('open'); }
+    closeModal.addEventListener('click', closeAllModals);
+    modal.addEventListener('click', (e)=>{ if(e.target===modal) closeAllModals(); });
+
+    // Wyszukiwanie
+    function applyFilter(){
+      const q = searchInput.value.trim().toLowerCase();
+      const filtered = !q ? products : products.filter(p => p.name.toLowerCase().includes(q));
+      render(filtered);
+    }
+    searchInput.addEventListener('input', applyFilter);
+    resetBtn.addEventListener('click', ()=>{ searchInput.value=''; applyFilter(); searchInput.focus(); });
+    // Start
+    render(products);
+  </script>
+</body>
+</html>
