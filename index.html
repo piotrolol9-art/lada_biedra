@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Lada tradycyjna — Biedronka (demo)</title>
+  <title>Składy produktów - Lada tradycyjna Biedronka </title>
   <meta name="description" content="Kafelki produktów z lady tradycyjnej. Kliknij, aby zobaczyć skład i wartości odżywcze." />
   <style>
     :root {
@@ -86,8 +86,59 @@
 
     .hint { margin-top: 8px; color: var(--muted); font-size: 12px }
 
-    @media (max-width: 750px) {
-      .sheet-body { grid-template-columns: 1fr }
+     @media (max-width: 900px) {
+      header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+      }
+      .toolbar {
+        width: 100%;
+        justify-content: space-between;
+        flex-wrap: wrap;
+      }
+      .input {
+        flex: 1;
+        min-width: 180px;
+        width: 100%;
+      }
+      .btn {
+        flex-shrink: 0;
+      }
+    }
+
+    @media (max-width: 650px) {
+      .wrap { padding: 16px; }
+      .title { font-size: 18px; }
+      .subtitle { font-size: 11px; }
+      .grid {
+        grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+        gap: 10px;
+      }
+      .card-img { height: 120px; }
+      .card h3 { font-size: 14px; }
+      .logo { width: 36px; height: 36px; }
+
+      /* Modal na telefonie */
+      .sheet-body {
+        grid-template-columns: 1fr;
+        padding: 12px;
+      }
+      .sheet-body img {
+        max-height: 200px;
+        object-fit: cover;
+      }
+      .facts {
+        margin-top: 8px;
+      }
+    }
+
+    @media (max-width: 400px) {
+      .title { font-size: 16px; }
+      .subtitle { font-size: 10px; }
+      .btn { font-size: 12px; padding: 8px 10px; }
+      .input { padding: 8px 10px; }
+      .input input { font-size: 13px; }
     }
   </style>
 </head>
